@@ -1,0 +1,48 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "The Ride", -- Game name used as requested
+   LoadingTitle = "The Ride | Loader",
+   LoadingSubtitle = "by Gemini",
+   ConfigurationSaving = {
+      Enabled = false
+   },
+   KeySystem = false 
+})
+
+-- KEY TAB
+local KeyTab = Window:CreateTab("Key System", 4483362458)
+
+local enteredKey = ""
+
+KeyTab:CreateInput({
+   Name = "Enter Key",
+   PlaceholderText = "Paste Key Here",
+   RemoveTextAfterFocusLost = false,
+   Callback = function(Text)
+      enteredKey = Text
+   end,
+})
+
+KeyTab:CreateButton({
+   Name = "Check Key",
+   Callback = function()
+      -- Key check for: theride2026
+      if string.lower(enteredKey) == "theride2026" then
+         Rayfield:Notify({Title = "Correct!", Content = "Access Granted. Loading Script...", Duration = 3})
+         
+         -- RUNS YOUR NEW SCRIPT
+         loadstring(game:HttpGet("https://raw.githubusercontent.com/inf3rno1/inferax/refs/heads/main/theride.lua"))()
+      else
+         Rayfield:Notify({Title = "Wrong Key", Content = "Please get the key from the link below.", Duration = 3})
+      end
+   end,
+})
+
+KeyTab:CreateButton({
+   Name = "Copy Key Link",
+   Callback = function()
+      setclipboard("https://link-center.net/1377384/tkitu38afrEr")
+      Rayfield:Notify({Title = "Success", Content = "Link copied to clipboard!", Duration = 3})
+   end,
+})
