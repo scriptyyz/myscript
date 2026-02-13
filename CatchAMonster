@@ -1,0 +1,187 @@
+-- [[ CUSTOM UI FOR YOUTUBE: SCRIPTYYZ - STABLE VERSION ]] --
+local LP = game:GetService("Players").LocalPlayer
+local VIM = game:GetService("VirtualInputManager")
+local UIS = game:GetService("UserInputService")
+local RS = game:GetService("RunService")
+
+_G.AutoAttack = false
+_G.AutoCatch = false
+_G.FlySpeed = 50
+_G.Flying = false
+
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local MinimizeBtn = Instance.new("TextButton")
+local Footer = Instance.new("TextLabel")
+local Container = Instance.new("ScrollingFrame")
+local UIListLayout = Instance.new("UIListLayout")
+
+-- GUI SETUP
+ScreenGui.Parent = game.CoreGui
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+MainFrame.Position = UDim2.new(0.1, 0, 0.4, 0)
+MainFrame.Size = UDim2.new(0, 250, 0, 245)
+MainFrame.Active = true
+MainFrame.Draggable = true
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 15)
+
+Title.Parent = MainFrame
+Title.Size = UDim2.new(1, 0, 0, 45)
+Title.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Title.Text = "Youtube: Scriptyyz"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 16
+Instance.new("UICorner", Title).CornerRadius = UDim.new(0, 15)
+
+MinimizeBtn.Parent = MainFrame
+MinimizeBtn.Size = UDim2.new(0, 30, 0, 30)
+MinimizeBtn.Position = UDim2.new(1, -35, 0, 7)
+MinimizeBtn.BackgroundTransparency = 1 
+MinimizeBtn.Text = "▼"
+MinimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeBtn.Font = Enum.Font.GothamBold
+MinimizeBtn.TextSize = 18
+
+local minimized = false
+MinimizeBtn.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    MainFrame:TweenSize(minimized and UDim2.new(0, 250, 0, 45) or UDim2.new(0, 250, 0, 245), "Out", "Quart", 0.3, true)
+    Container.Visible = not minimized
+    Footer.Visible = not minimized
+    MinimizeBtn.Text = minimized and "▲" or "▼"
+end)
+
+Footer.Parent = MainFrame
+Footer.Size = UDim2.new(1, 0, 0, 25)
+Footer.Position = UDim2.new(0, 0, 1, -25)
+Footer.BackgroundTransparency = 1
+Footer.Text = "Catch a Monster"
+Footer.TextColor3 = Color3.fromRGB(200, 200, 200)
+Footer.Font = Enum.Font.GothamBold
+Footer.TextSize = 11
+
+Container.Parent = MainFrame
+Container.Position = UDim2.new(0, 10, 0, 50)
+Container.Size = UDim2.new(1, -20, 1, -80)
+Container.BackgroundTransparency = 1
+Container.ScrollBarThickness = 0
+UIListLayout.Parent = Container
+UIListLayout.Padding = UDim.new(0, 6)
+
+local function createToggle(txt, callback)
+    local btn = Instance.new("TextButton", Container)
+    btn.Size = UDim2.new(1, 0, 0, 35)
+    btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    btn.Text = txt .. ": OFF"
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 14
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    local state = false
+    btn.MouseButton1Click:Connect(function()
+        state = not state
+        btn.Text = txt .. (state and ": ON" or ": OFF")
+        btn.TextColor3 = state and Color3.new(0, 1, 0) or Color3.new(1, 1, 1)
+        callback(state)
+    end)
+end
+
+local function createSlider(txt, min, max, callback)
+    local sliderBtn = Instance.new("Frame", Container)
+    sliderBtn.Size = UDim2.new(1, 0, 0, 35)
+    sliderBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    Instance.new("UICorner", sliderBtn).CornerRadius = UDim.new(0, 8)
+    local label = Instance.new("TextLabel", sliderBtn)
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.Text = txt .. ": " .. min
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.Font = Enum.Font.GothamBold
+    label.TextSize = 14
+    label.ZIndex = 2
+    local fill = Instance.new("Frame", sliderBtn)
+    fill.Size = UDim2.new(0, 0, 1, 0)
+    fill.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    fill.BorderSizePixel = 0
+    Instance.new("UICorner", fill).CornerRadius = UDim.new(0, 8)
+    local dragging = false
+    local function move()
+        local mousePos = UIS:GetMouseLocation().X
+        local percent = math.clamp((mousePos - sliderBtn.AbsolutePosition.X) / sliderBtn.AbsoluteSize.X, 0, 1)
+        fill.Size = UDim2.new(percent, 0, 1, 0)
+        local val = math.floor(min + (max - min) * percent)
+        label.Text = txt .. ": " .. val
+        callback(val)
+    end
+    sliderBtn.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true move() end end)
+    UIS.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
+    RS.RenderStepped:Connect(function() if dragging then move() end end)
+end
+
+-- FLY FIRST
+createToggle("Fly", function(v) _G.Flying = v end)
+createSlider("Fly Speed", 0, 250, function(v) _G.FlySpeed = v end)
+createToggle("Auto Attack", function(v) _G.AutoAttack = v end)
+createToggle("Instant Catch", function(v) _G.AutoCatch = v end)
+
+-- FLY LOGIC
+task.spawn(function()
+    local BV, BG = Instance.new("BodyVelocity"), Instance.new("BodyGyro")
+    BV.MaxForce, BG.MaxTorque = Vector3.new(1e8, 1e8, 1e8), Vector3.new(1e8, 1e8, 1e8)
+    RS.RenderStepped:Connect(function()
+        if _G.Flying and LP.Character and LP.Character:FindFirstChild("HumanoidRootPart") then
+            local hrp = LP.Character.HumanoidRootPart
+            BV.Parent, BG.Parent = hrp, hrp
+            BG.CFrame = workspace.CurrentCamera.CFrame
+            local dir = Vector3.new(0,0,0)
+            if UIS:IsKeyDown(Enum.KeyCode.W) then dir = dir + workspace.CurrentCamera.CFrame.LookVector end
+            if UIS:IsKeyDown(Enum.KeyCode.S) then dir = dir - workspace.CurrentCamera.CFrame.LookVector end
+            if UIS:IsKeyDown(Enum.KeyCode.A) then dir = dir - workspace.CurrentCamera.CFrame.RightVector end
+            if UIS:IsKeyDown(Enum.KeyCode.D) then dir = dir + workspace.CurrentCamera.CFrame.RightVector end
+            if UIS:IsKeyDown(Enum.KeyCode.Space) then dir = dir + Vector3.new(0,1,0) end
+            if UIS:IsKeyDown(Enum.KeyCode.LeftControl) then dir = dir - Vector3.new(0,1,0) end
+            BV.Velocity = dir * _G.FlySpeed
+        else
+            BV.Parent, BG.Parent = nil, nil
+        end
+    end)
+end)
+
+-- AUTO ATTACK (Distance 30)
+task.spawn(function()
+    while task.wait(0.2) do
+        if _G.AutoAttack and LP.Character and LP.Character:FindFirstChild("HumanoidRootPart") then
+            local hrp = LP.Character.HumanoidRootPart
+            for _, m in pairs(workspace.Monsters:GetChildren()) do
+                if m:IsA("Part") and (hrp.Position - m.Position).Magnitude < 30 then
+                    local pos, onScreen = workspace.CurrentCamera:WorldToViewportPoint(m.Position)
+                    if onScreen then
+                        VIM:SendMouseButtonEvent(pos.X, pos.Y, 0, true, game, 1)
+                        task.wait(0.05)
+                        VIM:SendMouseButtonEvent(pos.X, pos.Y, 0, false, game, 1)
+                    end
+                    break
+                end
+            end
+        end
+    end
+end)
+
+-- AUTO CATCH
+task.spawn(function()
+    local myId = "CatchPlayerId_" .. LP.UserId
+    while task.wait(0.1) do
+        if _G.AutoCatch then
+            for _, m in pairs(workspace.Monsters:GetChildren()) do
+                if m:GetAttribute(myId) then
+                    VIM:SendKeyEvent(true, Enum.KeyCode.E, false, game)
+                    task.wait(0.05)
+                    VIM:SendKeyEvent(false, Enum.KeyCode.E, false, game)
+                end
+            end
+        end
+    end
+end)
